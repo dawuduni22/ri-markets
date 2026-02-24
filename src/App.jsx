@@ -19,8 +19,8 @@ function fmtCountdown(secs) {
 }
 
 const ASSETS = [
-  { id: 'BTCUSDT',  label: 'BTC',  name: 'Bitcoin',     decimals: 2 },
-  { id: 'XAUTUSDT', label: 'XAUT', name: 'Gold Token',  decimals: 2 },
+  { id: 'BTCUSDT',  label: 'BTC (Bitcoin)',  name: 'Bitcoin',  decimals: 2 },
+  { id: 'XAUTUSDT', label: 'GOLD',           name: 'Gold',     decimals: 2 },
 ]
 
 const ABOUT_SECTIONS = [
@@ -48,7 +48,7 @@ const ABOUT_SECTIONS = [
   {
     q: 'Where does the data come from?',
     paras: [
-      "All price data used to calculate RSI is sourced in real time from Bybit's public market feed.",
+      "All price data used to calculate RSI is sourced in real time from aggregated public market feeds.",
       'No account or API key is required to view or participate in the demo environment.',
     ],
   },
@@ -129,7 +129,6 @@ function AboutPanel({ onClose }) {
           <div className="about-title">About <span>RIM</span></div>
           <button className="about-close" onClick={onClose}>✕</button>
         </div>
-        <div className="about-tagline">Relative Index Markets — Trade pure direction, not price.</div>
         <div className="about-qa">
           {ABOUT_SECTIONS.map((section, i) => (
             <div className="about-item" key={i}>
@@ -351,7 +350,7 @@ export default function App() {
           <div className="status-bar">
             <div className="dot" style={{ background: connected ? 'var(--green)' : 'var(--red)' }} />
             <span>
-              {connected ? `Live · Bybit · ${assetInfo.label}` : 'Reconnecting...'} · Next close{' '}
+              {connected ? `Live · ${assetInfo.label}` : 'Reconnecting...'} · Next close{' '}
               <span className="countdown">{fmtCountdown(countdown)}</span>
             </span>
           </div>
