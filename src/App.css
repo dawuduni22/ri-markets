@@ -489,3 +489,200 @@ button { cursor: pointer; font-family: var(--sans); }
   margin-bottom: 6px;
   font-size: 13px;
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   MOBILE RESPONSIVE — screens under 768px
+   Layout: stacked vertically, chart on top, trading panel below, scrollable
+   ══════════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+
+  /* Allow the page to scroll */
+  body {
+    height: auto;
+    overflow: auto;
+  }
+
+  /* ── Nav: compact, hide tagline ──────────────────────────────────────── */
+  .nav {
+    padding: 0 12px;
+    height: 48px;
+  }
+  .nav-tagline {
+    display: none;
+  }
+  .logo {
+    font-size: 18px;
+  }
+  .asset-tab {
+    font-size: 11px;
+    padding: 4px 10px;
+  }
+  .nav-links {
+    gap: 12px;
+  }
+  .nav-links a {
+    font-size: 12px;
+  }
+
+  /* ── Layout: stack vertically ────────────────────────────────────────── */
+  .layout {
+    flex-direction: column;
+    height: auto;
+    min-height: calc(100vh - 48px);
+    overflow: auto;
+  }
+
+  /* ── Chart area ──────────────────────────────────────────────────────── */
+  .chart-area {
+    padding: 8px;
+    gap: 6px;
+    flex: none;
+  }
+  .chart-header {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .pair {
+    font-size: 10px;
+  }
+  .price {
+    font-size: 16px;
+  }
+  .change {
+    font-size: 11px;
+  }
+  .chart-wrap {
+    height: 300px;
+    flex: none;
+  }
+  .resolved-badge {
+    font-size: 14px;
+    padding: 6px 14px;
+  }
+  .resolved-sub {
+    font-size: 10px;
+  }
+
+  /* ── Right panel becomes bottom panel ────────────────────────────────── */
+  .right-panel {
+    width: 100%;
+    border-left: none;
+    border-top: 1px solid var(--border);
+    padding: 12px;
+    gap: 12px;
+    overflow-y: visible;
+  }
+
+  /* ── Market header ───────────────────────────────────────────────────── */
+  .market-title {
+    font-size: 13px;
+  }
+  .market-sub {
+    font-size: 10px;
+  }
+
+  /* ── RSI section ─────────────────────────────────────────────────────── */
+  .rsi-value {
+    font-size: 24px;
+  }
+  .rsi-loading {
+    font-size: 10px;
+  }
+
+  /* ── Pool section ────────────────────────────────────────────────────── */
+  .pool-row {
+    font-size: 10px;
+  }
+  .pool-total {
+    font-size: 9px;
+  }
+
+  /* ── Trade section ───────────────────────────────────────────────────── */
+  .trade-question {
+    font-size: 10px;
+  }
+  .tsb-label {
+    font-size: 10px;
+  }
+  .tsb-price {
+    font-size: 14px;
+  }
+  .trade-side-btn {
+    padding: 8px 6px;
+  }
+  .trade-input {
+    font-size: 14px;
+    padding: 8px 0;
+  }
+  .trade-confirm {
+    padding: 10px;
+    font-size: 12px;
+  }
+
+  /* ── Asset graphic: smaller on mobile ────────────────────────────────── */
+  .asset-graphic-wrap {
+    padding: 4px 0;
+  }
+  .asset-graphic {
+    width: 80px;
+    height: 80px;
+  }
+  .asset-graphic--bar {
+    width: 150px;
+    height: 80px;
+  }
+
+  /* ── Status bar ──────────────────────────────────────────────────────── */
+  .status-bar {
+    font-size: 9px;
+    padding-top: 6px;
+    padding-bottom: 12px;
+  }
+
+  /* ── About panel ─────────────────────────────────────────────────────── */
+  .about-panel {
+    padding: 20px;
+    gap: 18px;
+    border-radius: 12px;
+  }
+  .about-title {
+    font-size: 20px;
+  }
+  .about-tagline {
+    font-size: 12px;
+  }
+  .about-q {
+    font-size: 13px;
+  }
+  .about-a {
+    font-size: 12px;
+  }
+  .about-disclaimer {
+    font-size: 11px;
+    padding: 10px 12px;
+  }
+}
+
+/* ── Extra small screens (under 380px) ───────────────────────────────────── */
+@media (max-width: 380px) {
+  .nav {
+    padding: 0 8px;
+  }
+  .logo {
+    font-size: 16px;
+  }
+  .asset-tab {
+    font-size: 10px;
+    padding: 3px 8px;
+  }
+  .chart-wrap {
+    height: 250px;
+  }
+  .rsi-value {
+    font-size: 20px;
+  }
+  .price {
+    font-size: 14px;
+  }
+}
