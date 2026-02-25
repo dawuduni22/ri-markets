@@ -65,62 +65,6 @@ const ABOUT_SECTIONS = [
   },
 ]
 
-function BTCGraphic() {
-  return (
-    <svg viewBox="0 0 200 200" className="asset-graphic" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="100" cy="100" r="100" fill="#F7931A" />
-      <text x="96" y="136" textAnchor="middle" fontSize="110"
-        fontFamily="'Russo One', sans-serif" fill="white"
-        transform="rotate(14,96,136)">₿</text>
-    </svg>
-  )
-}
-
-function XAUTGraphic() {
-  return (
-    <svg viewBox="0 0 240 160" className="asset-graphic asset-graphic--bar" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <linearGradient id="gT1" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#FFF8C0" /><stop offset="50%" stopColor="#F0C830" /><stop offset="100%" stopColor="#B09020" />
-        </linearGradient>
-        <linearGradient id="gF1" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#F0C030" /><stop offset="45%" stopColor="#C89010" /><stop offset="100%" stopColor="#7A5800" />
-        </linearGradient>
-        <linearGradient id="gS1" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="#B08010" /><stop offset="100%" stopColor="#4A3000" />
-        </linearGradient>
-        <linearGradient id="gT2" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#FFFAAA" /><stop offset="45%" stopColor="#FFD835" /><stop offset="100%" stopColor="#C09820" />
-        </linearGradient>
-        <linearGradient id="gF2" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#FFD030" /><stop offset="40%" stopColor="#D49015" /><stop offset="100%" stopColor="#8A6000" />
-        </linearGradient>
-        <linearGradient id="gS2" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="#C09010" /><stop offset="100%" stopColor="#5A3800" />
-        </linearGradient>
-      </defs>
-      <polygon points="208,68 226,58 226,106 208,116" fill="url(#gS1)" />
-      <polygon points="14,68 208,68 226,58 32,58" fill="url(#gT1)" />
-      <rect x="14" y="68" width="194" height="48" fill="url(#gF1)" />
-      <polygon points="14,68 208,68 226,58 32,58" fill="rgba(255,255,255,0.16)" />
-      <polygon points="14,116 208,116 226,106 32,106" fill="rgba(0,0,0,0.18)" />
-      <rect x="22" y="76" width="186" height="7" rx="2" fill="rgba(255,255,255,0.14)" />
-      <polygon points="196,30 214,20 214,68 196,78" fill="url(#gS2)" />
-      <polygon points="26,30 196,30 214,20 44,20" fill="url(#gT2)" />
-      <rect x="26" y="30" width="170" height="48" fill="url(#gF2)" />
-      <polygon points="26,30 196,30 214,20 44,20" fill="rgba(255,255,255,0.22)" />
-      <polygon points="26,78 196,78 214,68 44,68" fill="rgba(0,0,0,0.14)" />
-      <polygon points="26,30 32,34 32,74 26,78" fill="rgba(255,255,255,0.10)" />
-      <rect x="36" y="38" width="148" height="8" rx="2" fill="rgba(255,255,255,0.20)" />
-      <text x="111" y="57" textAnchor="middle" fontSize="8.5" fontWeight="700"
-        fontFamily="'Courier New', monospace" fill="rgba(50,28,0,0.55)" letterSpacing="2">FINE GOLD 999.9</text>
-      <text x="111" y="69" textAnchor="middle" fontSize="7"
-        fontFamily="'Courier New', monospace" fill="rgba(50,28,0,0.38)" letterSpacing="1">1000g</text>
-      <ellipse cx="120" cy="132" rx="104" ry="10" fill="rgba(0,0,0,0.26)" />
-    </svg>
-  )
-}
-
 function AboutPanel({ onClose }) {
   return (
     <div className="about-backdrop" onClick={onClose}>
@@ -175,15 +119,13 @@ export default function App() {
   const rsi      = currentRsi !== null ? currentRsi.toFixed(1) : '--'
   const isHigh   = currentRsi !== null && currentRsi >= THRESHOLD_HIGH
   const isLow    = currentRsi !== null && currentRsi <= THRESHOLD_LOW
-  const rsiColor = isHigh ? 'var(--red)' : isLow ? 'var(--green)' : 'var(--blue)'
+  const rsiColor = isHigh ? 'var(--red)' : isLow ? 'var(--green)' : 'var(--accent)'
   const barColor = isHigh
-    ? 'linear-gradient(90deg, var(--blue), var(--red))'
+    ? 'linear-gradient(90deg, var(--accent), var(--red))'
     : isLow
-    ? 'linear-gradient(90deg, var(--blue), var(--green))'
-    : 'linear-gradient(90deg, var(--blue), #4A8EF0)'
+    ? 'linear-gradient(90deg, var(--accent), var(--green))'
+    : 'linear-gradient(90deg, var(--accent), var(--accent-light))'
 
-  const highPct = total > 0 ? (poolHigh / total) * 100 : 50
-  const lowPct  = total > 0 ? (poolLow / total) * 100 : 50
   const cents   = selected === 'high' ? highCents : lowCents
   const amt     = parseFloat(amount) || 0
   const payout  = amt > 0 && cents > 0 ? (amt * (100 / cents)).toFixed(2) : null
@@ -204,7 +146,6 @@ export default function App() {
       <nav className="nav">
         <div className="nav-left">
           <div className="logo">RI<span>MARKET</span></div>
-          <div className="nav-tagline">Relative Index Markets: Trade pure direction, not price.</div>
         </div>
         <div className="nav-center">
           {ASSETS.map(a => (
@@ -247,7 +188,6 @@ export default function App() {
 
         <div className="right-panel">
           <div className="market-header">
-            <div className="market-label">Active Market · RIM</div>
             <div className="market-title">{assetInfo.label} RSI({RSI_PERIOD}) · {TIMEFRAME}m</div>
             <div className="market-sub">Which relative extreme closes first? · No expiry</div>
           </div>
@@ -282,8 +222,8 @@ export default function App() {
               <span className="r">{fmt(poolLow)} · {lowCents}%</span>
             </div>
             <div className="pool-bar">
-              <div className="g" style={{ width: `${highPct}%` }} />
-              <div className="r" style={{ width: `${lowPct}%` }} />
+              <div className="g" style={{ width: `${highCents}%` }} />
+              <div className="r" style={{ width: `${lowCents}%` }} />
             </div>
             <div className="pool-total">Total pool: {fmt(total)} USDC (demo)</div>
           </div>
@@ -341,10 +281,6 @@ export default function App() {
                 </div>
               </div>
             )}
-          </div>
-
-          <div className="asset-graphic-wrap">
-            {activeAsset === 'BTCUSDT' ? <BTCGraphic /> : <XAUTGraphic />}
           </div>
 
           <div className="status-bar">
