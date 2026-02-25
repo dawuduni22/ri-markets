@@ -99,7 +99,7 @@ function AboutPanel({ onClose }) {
 }
 
 /* ── Positions strip below chart ──────────────────────────────────────── */
-function PositionsPanel({ positions, livePrice, onClose }) {
+function PositionsPanel({ positions, highCents, lowCents, onClose }) {
   if (positions.length === 0) return null
 
   return (
@@ -119,13 +119,9 @@ function PositionsPanel({ positions, livePrice, onClose }) {
           <span></span>
         </div>
         {positions.map(pos => {
-          const current = livePrice ?? pos.entryPrice
-          const priceDiff = current - pos.entryPrice
-          const pctChange = pos.entryPrice > 0 ? (priceDiff / pos.entryPrice) * 100 : 0
-          // For "high" side, user profits when price goes up; for "low", when price goes down
-          const direction = pos.side === 'high' ? 1 : -1
-          const pnl = direction * pctChange * (pos.amount / 100)
-          const pnlPct = direction * pctChange
+          const currentCents = pos.side === 'high' ? highCents : lowCents
+          const pnlPct = pos.entryCents > 0 ? ((currentCents - pos.entryCents) / pos.entryCents) * 100 : 0
+          const pnl = pnlPct * (pos.amount / 100)
           const isPositive = pnl >= 0
 
           return (
@@ -135,10 +131,10 @@ function PositionsPanel({ positions, livePrice, onClose }) {
               </span>
               <span>{pos.assetLabel}</span>
               <span>${pos.amount.toFixed(2)}</span>
-              <span>${pos.entryPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-              <span>${current.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+              <span>{pos.entryCents}¢</span>
+              <span>{currentCents}¢</span>
               <span className={isPositive ? 'g' : 'r'}>
-                {isPositive ? '+' : ''}{pnl.toFixed(2)} ({isPositive ? '+' : ''}{pnlPct.toFixed(2)}%)
+                {isPositive ? '+' : ''}{pnl.toFixed(2)} ({isPositive ? '+' : ''}{pnlPct.toFixed(1)}%)
               </span>
               <span>
                 <button className="positions-close-btn" onClick={() => onClose(pos.id)}>Close</button>
@@ -195,16 +191,18 @@ export default function App() {
   }
 
   function handleConfirm() {
-    if (!livePrice || amt <= 0) return
+    if (amt <= 0) return
 
-    // Create a new position
+    // Store entry odds in cents
+    const entryCents = selected === 'high' ? highCents : lowCents
+
     const newPosition = {
       id: Date.now().toString(),
       asset: activeAsset,
       assetLabel: assetInfo.label,
       side: selected,
       amount: amt,
-      entryPrice: livePrice,
+      entryCents,
       openedAt: new Date().toISOString(),
     }
     setPositions(prev => [newPosition, ...prev])
@@ -262,7 +260,8 @@ export default function App() {
           </div>
           <PositionsPanel
             positions={activePositions}
-            livePrice={livePrice}
+            highCents={highCents}
+            lowCents={lowCents}
             onClose={closePosition}
           />
         </div>
