@@ -98,12 +98,66 @@ function AboutPanel({ onClose }) {
   )
 }
 
+/* ── Positions strip below chart ──────────────────────────────────────── */
+function PositionsPanel({ positions, livePrice, onClose }) {
+  if (positions.length === 0) return null
+
+  return (
+    <div className="positions-panel">
+      <div className="positions-header">
+        <span className="positions-title">Open Positions ({positions.length})</span>
+        <span className="positions-demo">SIMULATED</span>
+      </div>
+      <div className="positions-table">
+        <div className="positions-row positions-row--head">
+          <span>Side</span>
+          <span>Asset</span>
+          <span>Size</span>
+          <span>Entry</span>
+          <span>Current</span>
+          <span>P&L</span>
+          <span></span>
+        </div>
+        {positions.map(pos => {
+          const current = livePrice ?? pos.entryPrice
+          const priceDiff = current - pos.entryPrice
+          const pctChange = pos.entryPrice > 0 ? (priceDiff / pos.entryPrice) * 100 : 0
+          // For "high" side, user profits when price goes up; for "low", when price goes down
+          const direction = pos.side === 'high' ? 1 : -1
+          const pnl = direction * pctChange * (pos.amount / 100)
+          const pnlPct = direction * pctChange
+          const isPositive = pnl >= 0
+
+          return (
+            <div className="positions-row" key={pos.id}>
+              <span className={pos.side === 'high' ? 'g' : 'r'}>
+                {pos.side === 'high' ? '▲ High' : '▼ Low'}
+              </span>
+              <span>{pos.assetLabel}</span>
+              <span>${pos.amount.toFixed(2)}</span>
+              <span>${pos.entryPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+              <span>${current.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+              <span className={isPositive ? 'g' : 'r'}>
+                {isPositive ? '+' : ''}{pnl.toFixed(2)} ({isPositive ? '+' : ''}{pnlPct.toFixed(2)}%)
+              </span>
+              <span>
+                <button className="positions-close-btn" onClick={() => onClose(pos.id)}>Close</button>
+              </span>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 export default function App() {
   const [activeAsset, setActiveAsset] = useState('BTCUSDT')
   const [aboutOpen, setAboutOpen]     = useState(false)
   const [selected, setSelected]       = useState(null)
   const [amount, setAmount]           = useState('')
   const [confirmed, setConfirmed]     = useState(false)
+  const [positions, setPositions]     = useState([])
 
   const assetInfo = ASSETS.find(a => a.id === activeAsset) ?? ASSETS[0]
 
@@ -131,14 +185,36 @@ export default function App() {
   const payout  = amt > 0 && cents > 0 ? (amt * (100 / cents)).toFixed(2) : null
   const profit  = amt > 0 && cents > 0 ? (amt * (100 / cents) - amt).toFixed(2) : null
 
+  // Only show positions for the currently active asset
+  const activePositions = positions.filter(p => p.asset === activeAsset)
+
   function switchAsset(id) { setActiveAsset(id); setSelected(null); setAmount(''); setConfirmed(false) }
   function selectSide(side) {
     if (selected === side) { setSelected(null); setAmount(''); setConfirmed(false) }
     else { setSelected(side); setAmount(''); setConfirmed(false) }
   }
+
   function handleConfirm() {
+    if (!livePrice || amt <= 0) return
+
+    // Create a new position
+    const newPosition = {
+      id: Date.now().toString(),
+      asset: activeAsset,
+      assetLabel: assetInfo.label,
+      side: selected,
+      amount: amt,
+      entryPrice: livePrice,
+      openedAt: new Date().toISOString(),
+    }
+    setPositions(prev => [newPosition, ...prev])
+
     setConfirmed(true)
-    setTimeout(() => { setConfirmed(false); setSelected(null); setAmount('') }, 3500)
+    setTimeout(() => { setConfirmed(false); setSelected(null); setAmount('') }, 2500)
+  }
+
+  function closePosition(id) {
+    setPositions(prev => prev.filter(p => p.id !== id))
   }
 
   return (
@@ -184,6 +260,11 @@ export default function App() {
               </div>
             )}
           </div>
+          <PositionsPanel
+            positions={activePositions}
+            livePrice={livePrice}
+            onClose={closePosition}
+          />
         </div>
 
         <div className="right-panel">
@@ -276,8 +357,8 @@ export default function App() {
               <div className="trade-success">
                 <span className="trade-success-icon">✓</span>
                 <div>
-                  <div className="trade-success-title">Demo Order Placed</div>
-                  <div className="trade-success-sub">Simulated trade only. No real funds used. Live trading coming at launch.</div>
+                  <div className="trade-success-title">Demo Order Filled</div>
+                  <div className="trade-success-sub">Position open — view below chart. Simulated only.</div>
                 </div>
               </div>
             )}
