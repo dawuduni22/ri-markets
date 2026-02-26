@@ -11,7 +11,7 @@ const THRESHOLD_LOW  = 30
 const INTERVAL_MS    = 5 * 60 * 1000
 const INTERVAL_S     = 5 * 60
 const MAX_CANDLES    = 300
-const LOCAL_WS       = 'wss://ri-markets-production.up.railway.app/ws'
+const LOCAL_WS       = 'ws://localhost:3001/ws'
 
 const BOT_MIN = 2000
 const BOT_MAX = 6000
@@ -301,19 +301,22 @@ export function useMarket(asset = 'BTCUSDT') {
   // ── Load candles from Supabase ──────────────────────────────────────────
   const loadStoredCloses = useCallback(async (assetId) => {
     try {
+      // Fetch most recent candles (descending), then reverse to ascending for chart
       const { data, error } = await supabase
         .from('closes')
         .select('candle_time, close_price')
         .eq('asset', assetId)
         .eq('timeframe', TIMEFRAME)
-        .order('candle_time', { ascending: true })
+        .order('candle_time', { ascending: false })
         .limit(MAX_CANDLES)
       if (error) { console.error('loadStoredCloses error:', error.message); return false }
       if (!data || data.length === 0) {
         console.warn(`${assetId}: no rows in Supabase closes table yet`)
         return false
       }
-      for (const row of data) {
+      // Reverse so oldest is first (chart needs ascending order)
+      const sorted = data.reverse()
+      for (const row of sorted) {
         const t = Math.floor(new Date(row.candle_time).getTime() / 1000)
         const close = parseFloat(row.close_price)
         addClosedCandle(t, close)
