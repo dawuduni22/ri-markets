@@ -11,7 +11,7 @@ const THRESHOLD_LOW  = 30
 const INTERVAL_MS    = 5 * 60 * 1000
 const INTERVAL_S     = 5 * 60
 const MAX_CANDLES    = 300
-const LOCAL_WS       = 'ws://localhost:3001/ws'
+const LOCAL_WS       = 'wss://ri-markets-production.up.railway.app/ws'
 
 const BOT_MIN = 2000
 const BOT_MAX = 6000
