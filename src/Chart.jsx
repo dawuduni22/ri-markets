@@ -5,11 +5,11 @@ const THRESHOLD_HIGH = 70
 const THRESHOLD_LOW  = 30
 
 const LAYOUT = {
-  background: { type: 'solid', color: '#0b0e14' },
-  textColor: '#848e9c',
+  background: { type: 'solid', color: '#0d1014' },
+  textColor: '#939caa',
   panes: {
-    separatorColor: '#1b1f2a',
-    separatorHoverColor: '#2a3040',
+    separatorColor: '#232932',
+    separatorHoverColor: '#2f3742',
     enableResize: false,
   },
 }
@@ -34,11 +34,11 @@ export default function Chart({ priceData, rsiData }) {
     const chart = createChart(el, {
       autoSize: true,
       layout: LAYOUT,
-      grid: { vertLines: { color: '#1b1f2a' }, horzLines: { color: '#1b1f2a' } },
+      grid: { vertLines: { color: '#1a1f27' }, horzLines: { color: '#1a1f27' } },
       crosshair: { mode: 1 },
-      rightPriceScale: { borderColor: '#1b1f2a' },
+      rightPriceScale: { borderColor: '#232932' },
       timeScale: {
-        borderColor: '#1b1f2a',
+        borderColor: '#232932',
         timeVisible: true,
         fixLeftEdge: false,
         fixRightEdge: false,
@@ -48,25 +48,25 @@ export default function Chart({ priceData, rsiData }) {
 
     // Pane 0 — price
     priceSerRef.current = chart.addSeries(LineSeries, {
-      color: '#5b9cf6', lineWidth: 2,
+      color: '#3e6fe0', lineWidth: 2,
       priceLineVisible: false, lastValueVisible: true,
       crosshairMarkerVisible: true, crosshairMarkerRadius: 4,
     }, 0)
 
     // Pane 1 — RSI
     const rsiSer = chart.addSeries(LineSeries, {
-      color: '#5b9cf6', lineWidth: 2,
+      color: '#3e6fe0', lineWidth: 2,
       priceLineVisible: false, lastValueVisible: true,
     }, 1)
     rsiSerRef.current = rsiSer
     markersRef.current = createSeriesMarkers(rsiSer, [])
 
     obSerRef.current = chart.addSeries(LineSeries, {
-      color: 'rgba(234,57,67,0.8)', lineWidth: 1,
+      color: 'rgba(22,163,116,0.55)', lineWidth: 1,
       priceLineVisible: false, lastValueVisible: false,
     }, 1)
     osSerRef.current = chart.addSeries(LineSeries, {
-      color: 'rgba(14,203,129,0.8)', lineWidth: 1,
+      color: 'rgba(216,69,61,0.55)', lineWidth: 1,
       priceLineVisible: false, lastValueVisible: false,
     }, 1)
 
@@ -125,7 +125,7 @@ export default function Chart({ priceData, rsiData }) {
           .map(p => ({
             time: p.time,
             position: p.value >= THRESHOLD_HIGH ? 'aboveBar' : 'belowBar',
-            color: p.value >= THRESHOLD_HIGH ? '#ea3943' : '#0ecb81',
+            color: p.value >= THRESHOLD_HIGH ? '#16a374' : '#d8453d',
             shape: 'circle', size: 1,
           }))
         markersRef.current.setMarkers(markers)

@@ -3,6 +3,37 @@ import { useMarket } from './useMarket'
 import Chart from './Chart'
 import './App.css'
 
+/* ── Icons ─────────────────────────────────────────────────────────────────
+   Inline SVG rather than ▲ ▼ ✓ ✕ glyphs, which render differently on every
+   platform and are the fastest way to make an interface look unfinished. */
+function Caret({ dir = 'up', size = 9 }) {
+  return (
+    <svg className="caret" width={size} height={size} viewBox="0 0 10 10" fill="none" aria-hidden="true">
+      <path
+        d={dir === 'up' ? 'M5 2.5 9 7.5H1z' : 'M5 7.5 1 2.5h8z'}
+        fill="currentColor"
+      />
+    </svg>
+  )
+}
+
+function CloseIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+      <path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function CheckIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path d="M3 8.5l3.5 3.5L13 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+/* ── Formatters ───────────────────────────────────────────────────────────── */
 function fmt(n) {
   return n >= 1000 ? '$' + (n / 1000).toFixed(1) + 'k' : '$' + Math.round(n)
 }
@@ -19,49 +50,54 @@ function fmtCountdown(secs) {
 }
 
 const ASSETS = [
-  { id: 'BTCUSDT',  label: 'BTC (Bitcoin)',  name: 'Bitcoin',  decimals: 2 },
-  { id: 'XAUTUSDT', label: 'GOLD',           name: 'Gold',     decimals: 2 },
+  { id: 'BTCUSDT',  label: 'BTC',  name: 'Bitcoin', pair: 'BTC/USDT',  decimals: 2 },
+  { id: 'XAUTUSDT', label: 'Gold', name: 'Gold',    pair: 'XAUT/USDT', decimals: 2 },
 ]
 
 const ABOUT_SECTIONS = [
   {
     q: 'What is a Relative Index Market?',
     paras: [
-      'A Relative Index Market is a trading format that resolves based entirely on a technical indicator — the Relative Strength Index (RSI) — rather than on price targets or preset expiration times.',
-      'Instead of focusing on how far price moves, you are trading the directional outcome of momentum reaching a defined extreme.',
+      'A Relative Index Market is a trading format that resolves on a technical indicator, the Relative Strength Index (RSI), rather than on price targets or preset expiration times.',
+      'Instead of trading how far price moves, you are trading which direction reaches real strength first.',
     ],
   },
   {
     q: 'How does it work?',
     paras: [
-      'Each market tracks RSI(10) calculated on closed 5-minute candles.',
-      'A market resolves when one of the following conditions is met on a fully closed candle:',
+      'Each market tracks RSI(10) on closed 5-minute candles. A market resolves the moment one of these conditions is met on a fully closed candle.',
     ],
-    bullets: ['Relative High → RSI ≥ 70', 'Relative Low → RSI ≤ 30'],
-    after: 'Whichever threshold is reached first determines the outcome, and the market closes immediately after that candle confirms. There is no price target and no countdown timer. Resolution depends solely on momentum reaching a defined level.',
+    defs: [
+      { side: 'high', term: 'Relative High', value: 'RSI 70 or above' },
+      { side: 'low',  term: 'Relative Low',  value: 'RSI 30 or below' },
+    ],
+    after: 'Whichever threshold is reached first determines the outcome, and the market closes on that candle. There is no price target and no countdown.',
   },
   {
-    q: 'What are the two sides?',
-    bullets: ['Relative High (RSI ≥ 70)', 'Relative Low (RSI ≤ 30)'],
-    after: 'You are taking a position on which momentum extreme is reached first. This structure isolates directional momentum, not price distance or time decay. Whether price moves $10 or $1,000 is irrelevant — only whether RSI reaches an upper or lower extreme matters.',
+    q: 'What are you actually taking a position on?',
+    paras: [
+      'Which momentum extreme arrives first. That isolates direction from distance and from time decay. Whether price moves $10 or $1,000 does not change the outcome, only whether RSI reaches the upper or lower level.',
+    ],
   },
   {
     q: 'Where does the data come from?',
     paras: [
-      "All price data used to calculate RSI is sourced in real time from aggregated public market feeds.",
-      'No account or API key is required to view or participate in the demo environment.',
+      'Price data is streamed live from public market feeds and RSI is calculated on the server from closed candles. No account or API key is needed to view or take part in the demo.',
     ],
   },
   {
     q: 'Is there a time limit?',
     paras: [
-      'No. Markets remain open until RSI reaches 70 or 30 on a closed 5-minute candle. This could occur within minutes or take several hours, depending on market conditions.',
+      'No. Markets stay open until RSI reaches 70 or 30 on a closed 5-minute candle. That can take minutes or several hours.',
     ],
   },
   {
-    q: 'What assets are available?',
-    bullets: ['BTC/USDT', 'XAUT/USDT (tokenized gold)'],
-    after: 'Additional markets may be introduced over time.',
+    q: 'What markets are available?',
+    defs: [
+      { term: 'BTC/USDT',  value: 'Bitcoin' },
+      { term: 'XAUT/USDT', value: 'Tokenized gold' },
+    ],
+    after: 'More may be added over time.',
   },
 ]
 
@@ -70,9 +106,12 @@ function AboutPanel({ onClose }) {
     <div className="about-backdrop" onClick={onClose}>
       <div className="about-panel" onClick={e => e.stopPropagation()}>
         <div className="about-header">
-          <div className="about-title">About <span>RIM</span></div>
-          <button className="about-close" onClick={onClose}>✕</button>
+          <div className="about-title">About RI Markets</div>
+          <button className="about-close" onClick={onClose} aria-label="Close">
+            <CloseIcon />
+          </button>
         </div>
+
         <div className="about-qa">
           {ABOUT_SECTIONS.map((section, i) => (
             <div className="about-item" key={i}>
@@ -80,42 +119,51 @@ function AboutPanel({ onClose }) {
               {section.paras && section.paras.map((p, j) => (
                 <div className="about-a" key={j}>{p}</div>
               ))}
-              {section.bullets && (
-                <ul className="about-bullets">
-                  {section.bullets.map((b, j) => <li key={j}>{b}</li>)}
-                </ul>
+              {section.defs && (
+                <dl className="about-defs">
+                  {section.defs.map((d, j) => (
+                    <div className="about-def" key={j}>
+                      <dt className={d.side === 'high' ? 'g' : d.side === 'low' ? 'r' : ''}>
+                        {d.side && <Caret dir={d.side === 'high' ? 'up' : 'down'} />}
+                        {d.term}
+                      </dt>
+                      <dd>{d.value}</dd>
+                    </div>
+                  ))}
+                </dl>
               )}
               {section.after && <div className="about-a">{section.after}</div>}
             </div>
           ))}
         </div>
+
         <div className="about-disclaimer">
-          <strong>Disclaimer</strong><br/>
-          This platform is a demonstration environment only. All activity is simulated and does not involve real funds. Displayed outcomes, liquidity, and movements are generated for illustrative purposes and do not reflect live market conditions. This demo does not represent actual trading infrastructure or real market execution.
+          <strong>Demo environment</strong>
+          Everything here is simulated. No real funds are involved. Pool sizes, odds, and positions are illustrative and do not reflect live liquidity or real execution.
         </div>
       </div>
     </div>
   )
 }
 
-/* ── Positions strip below chart ──────────────────────────────────────── */
+/* ── Positions ────────────────────────────────────────────────────────────── */
 function PositionsPanel({ positions, highCents, lowCents, onClose }) {
   if (positions.length === 0) return null
 
   return (
     <div className="positions-panel">
       <div className="positions-header">
-        <span className="positions-title">Open Positions ({positions.length})</span>
-        <span className="positions-demo">SIMULATED</span>
+        <span className="positions-title">Open positions ({positions.length})</span>
+        <span className="demo-tag">Simulated</span>
       </div>
       <div className="positions-table">
         <div className="positions-row positions-row--head">
           <span>Side</span>
-          <span>Asset</span>
+          <span>Market</span>
           <span>Size</span>
           <span>Entry</span>
           <span>Current</span>
-          <span>P&L</span>
+          <span>Profit and loss</span>
           <span></span>
         </div>
         {positions.map(pos => {
@@ -126,14 +174,15 @@ function PositionsPanel({ positions, highCents, lowCents, onClose }) {
 
           return (
             <div className="positions-row" key={pos.id}>
-              <span className={pos.side === 'high' ? 'g' : 'r'}>
-                {pos.side === 'high' ? '▲ High' : '▼ Low'}
+              <span className={`positions-side ${pos.side === 'high' ? 'g' : 'r'}`}>
+                <Caret dir={pos.side === 'high' ? 'up' : 'down'} />
+                {pos.side === 'high' ? 'High' : 'Low'}
               </span>
               <span>{pos.assetLabel}</span>
-              <span>${pos.amount.toFixed(2)}</span>
-              <span>{pos.entryCents}¢</span>
-              <span>{currentCents}¢</span>
-              <span className={isPositive ? 'g' : 'r'}>
+              <span className="num">${pos.amount.toFixed(2)}</span>
+              <span className="num">{pos.entryCents}&cent;</span>
+              <span className="num">{currentCents}&cent;</span>
+              <span className={`num ${isPositive ? 'g' : 'r'}`}>
                 {isPositive ? '+' : ''}{pnl.toFixed(2)} ({isPositive ? '+' : ''}{pnlPct.toFixed(1)}%)
               </span>
               <span>
@@ -147,6 +196,7 @@ function PositionsPanel({ positions, highCents, lowCents, onClose }) {
   )
 }
 
+/* ── App ──────────────────────────────────────────────────────────────────── */
 export default function App() {
   const [activeAsset, setActiveAsset] = useState('BTCUSDT')
   const [aboutOpen, setAboutOpen]     = useState(false)
@@ -166,22 +216,19 @@ export default function App() {
     THRESHOLD_HIGH, THRESHOLD_LOW, RSI_PERIOD, TIMEFRAME,
   } = useMarket(activeAsset)
 
-  const rsi      = currentRsi !== null ? currentRsi.toFixed(1) : '--'
-  const isHigh   = currentRsi !== null && currentRsi >= THRESHOLD_HIGH
-  const isLow    = currentRsi !== null && currentRsi <= THRESHOLD_LOW
-  const rsiColor = isHigh ? 'var(--red)' : isLow ? 'var(--green)' : 'var(--accent)'
-  const barColor = isHigh
-    ? 'linear-gradient(90deg, var(--accent), var(--red))'
-    : isLow
-    ? 'linear-gradient(90deg, var(--accent), var(--green))'
-    : 'linear-gradient(90deg, var(--accent), var(--accent-light))'
+  const rsi    = currentRsi !== null ? currentRsi.toFixed(1) : '--'
+  const isHigh = currentRsi !== null && currentRsi >= THRESHOLD_HIGH
+  const isLow  = currentRsi !== null && currentRsi <= THRESHOLD_LOW
 
-  const cents   = selected === 'high' ? highCents : lowCents
-  const amt     = parseFloat(amount) || 0
-  const payout  = amt > 0 && cents > 0 ? (amt * (100 / cents)).toFixed(2) : null
-  const profit  = amt > 0 && cents > 0 ? (amt * (100 / cents) - amt).toFixed(2) : null
+  /* High is green and Low is red everywhere in the interface, matching the
+     side buttons. The meter used to invert this and it read as a bug. */
+  const zoneColor = isHigh ? 'var(--high)' : isLow ? 'var(--low)' : 'var(--accent)'
 
-  // Only show positions for the currently active asset
+  const cents  = selected === 'high' ? highCents : lowCents
+  const amt    = parseFloat(amount) || 0
+  const payout = amt > 0 && cents > 0 ? (amt * (100 / cents)).toFixed(2) : null
+  const profit = amt > 0 && cents > 0 ? (amt * (100 / cents) - amt).toFixed(2) : null
+
   const activePositions = positions.filter(p => p.asset === activeAsset)
 
   function switchAsset(id) { setActiveAsset(id); setSelected(null); setAmount(''); setConfirmed(false) }
@@ -193,7 +240,6 @@ export default function App() {
   function handleConfirm() {
     if (amt <= 0) return
 
-    // Store entry odds in cents
     const entryCents = selected === 'high' ? highCents : lowCents
 
     const newPosition = {
@@ -219,7 +265,7 @@ export default function App() {
     <>
       <nav className="nav">
         <div className="nav-left">
-          <div className="logo">RI<span>MARKET</span></div>
+          <div className="logo">RI Markets</div>
         </div>
         <div className="nav-center">
           {ASSETS.map(a => (
@@ -231,33 +277,38 @@ export default function App() {
           ))}
         </div>
         <div className="nav-links">
-          <a href="#" className="active">Markets</a>
-          <a href="#" onClick={e => { e.preventDefault(); setAboutOpen(true) }}>About</a>
+          <button className="nav-link active">Markets</button>
+          <button className="nav-link" onClick={() => setAboutOpen(true)}>About</button>
         </div>
       </nav>
 
       <div className="layout">
         <div className="chart-area">
           <div className="chart-header">
-            <span className="pair">{assetInfo.label}/USDT · {TIMEFRAME}m · RSI({RSI_PERIOD})</span>
+            <span className="pair">{assetInfo.pair} · {TIMEFRAME}m · RSI({RSI_PERIOD})</span>
             <div className="price-display">
-              <span className="price">{fmtPrice(livePrice, assetInfo.decimals)}</span>
-              <span className={`change ${priceChange >= 0 ? 'up' : 'down'}`}>
+              <span className="price num">{fmtPrice(livePrice, assetInfo.decimals)}</span>
+              <span className={`change num ${priceChange >= 0 ? 'up' : 'down'}`}>
                 {priceChange >= 0 ? '+' : ''}{priceChange.toFixed(2)}%
               </span>
             </div>
           </div>
+
           <div className="chart-wrap">
             <Chart priceData={priceData} rsiData={rsiData} />
             {status === 'resolved' && outcome && (
               <div className="resolved-overlay">
-                <div className={`resolved-badge ${outcome === 'OVERBOUGHT' ? 'green' : 'red'}`}>
-                  {outcome === 'OVERBOUGHT' ? '▲ RELATIVE HIGH' : '▼ RELATIVE LOW'}
+                <div className={`resolved-badge ${outcome === 'OVERBOUGHT' ? 'high' : 'low'}`}>
+                  <Caret dir={outcome === 'OVERBOUGHT' ? 'up' : 'down'} size={11} />
+                  {outcome === 'OVERBOUGHT' ? 'Relative High' : 'Relative Low'}
                 </div>
-                <div className="resolved-sub">RSI({RSI_PERIOD}) threshold reached · New market opening soon</div>
+                <div className="resolved-sub">
+                  RSI({RSI_PERIOD}) threshold reached. New market opening shortly.
+                </div>
               </div>
             )}
           </div>
+
           <PositionsPanel
             positions={activePositions}
             highCents={highCents}
@@ -268,105 +319,120 @@ export default function App() {
 
         <div className="right-panel">
           <div className="market-header">
-            <div className="market-title">{assetInfo.label} RSI({RSI_PERIOD}) · {TIMEFRAME}m</div>
-            <div className="market-sub">Which relative extreme closes first? · No expiry</div>
+            <div className="market-title">{assetInfo.name} · RSI({RSI_PERIOD}) · {TIMEFRAME}m</div>
+            <div className="market-sub">Which extreme closes first. No expiry.</div>
           </div>
 
+          {/* RSI meter. The 30 and 70 marks sit at their true positions on the
+              track so the fill can be read against them at a glance. */}
           <div className="rsi-live">
-            <div className="rsi-label">Live RSI({RSI_PERIOD})</div>
-            <div className="rsi-value" style={{ color: rsiColor }}>
-              {rsi}
-              {currentRsi === null && <span className="rsi-loading"> — waiting for {RSI_PERIOD} closes</span>}
+            <div className="rsi-top">
+              <span className="rsi-label">Live RSI({RSI_PERIOD})</span>
+              <span className="rsi-value num" style={{ color: zoneColor }}>{rsi}</span>
             </div>
-            <div className="rsi-bar-wrap">
-              <div className="rsi-bar" style={{ width: `${currentRsi ?? 50}%`, background: barColor }} />
+
+            <div className="rsi-track">
+              <div className="rsi-fill" style={{ width: `${currentRsi ?? 50}%`, background: zoneColor }} />
+              <div className="rsi-threshold" style={{ left: `${THRESHOLD_LOW}%` }} />
+              <div className="rsi-threshold" style={{ left: `${THRESHOLD_HIGH}%` }} />
             </div>
-            <div className="rsi-ticks">
-              <span>0</span>
-              <span style={{ color: 'var(--green)' }}>30 ▼</span>
-              <span style={{ color: 'var(--red)' }}>70 ▲</span>
-              <span>100</span>
+
+            <div className="rsi-ticks num">
+              <span className="tick tick-start" style={{ left: '0%' }}>0</span>
+              <span className="tick t-low" style={{ left: `${THRESHOLD_LOW}%` }}>{THRESHOLD_LOW}</span>
+              <span className="tick t-high" style={{ left: `${THRESHOLD_HIGH}%` }}>{THRESHOLD_HIGH}</span>
+              <span className="tick tick-end" style={{ left: '100%' }}>100</span>
             </div>
-            <span className={`rsi-zone ${isHigh ? 'zone-over' : isLow ? 'zone-under' : 'zone-neutral'}`}>
-              {isHigh ? 'RELATIVE HIGH' : isLow ? 'RELATIVE LOW' : 'NEUTRAL'}
+
+            <span className={`rsi-zone ${isHigh ? 'zone-high' : isLow ? 'zone-low' : 'zone-neutral'}`}>
+              {isHigh ? 'Relative High' : isLow ? 'Relative Low' : 'Neutral'}
             </span>
+
+            {currentRsi === null && (
+              <div className="rsi-loading">Waiting for {RSI_PERIOD} closes</div>
+            )}
           </div>
 
           <div className="pool-section">
             <div className="pool-row">
-              <span className="g">▲ RELATIVE HIGH</span>
-              <span className="g">{fmt(poolHigh)} · {highCents}%</span>
+              <span className="pool-side g"><Caret dir="up" />Relative High</span>
+              <span className="g num">{fmt(poolHigh)} · {highCents}%</span>
             </div>
             <div className="pool-row">
-              <span className="r">▼ RELATIVE LOW</span>
-              <span className="r">{fmt(poolLow)} · {lowCents}%</span>
+              <span className="pool-side r"><Caret dir="down" />Relative Low</span>
+              <span className="r num">{fmt(poolLow)} · {lowCents}%</span>
             </div>
             <div className="pool-bar">
               <div className="g" style={{ width: `${highCents}%` }} />
               <div className="r" style={{ width: `${lowCents}%` }} />
             </div>
-            <div className="pool-total">Total pool: {fmt(total)} USDC (demo)</div>
+            <div className="pool-total num">Total pool {fmt(total)} USDC, simulated</div>
           </div>
 
           <div className="trade-section">
-            <div className="trade-question">Which relative extreme does RSI({RSI_PERIOD}) reach first?</div>
+            <div className="trade-question">Which extreme does RSI({RSI_PERIOD}) reach first?</div>
+
             <div className="trade-sides">
-              <button className={`trade-side-btn green ${selected === 'high' ? 'active' : ''}`}
+              <button className={`trade-side-btn high ${selected === 'high' ? 'active' : ''}`}
                 onClick={() => selectSide('high')}>
-                <span className="tsb-label">▲ Relative High</span>
-                <span className="tsb-price">{highCents}¢</span>
+                <span className="tsb-label"><Caret dir="up" />Relative High</span>
+                <span className="tsb-price num">{highCents}&cent;</span>
               </button>
-              <button className={`trade-side-btn red ${selected === 'low' ? 'active' : ''}`}
+              <button className={`trade-side-btn low ${selected === 'low' ? 'active' : ''}`}
                 onClick={() => selectSide('low')}>
-                <span className="tsb-label">▼ Relative Low</span>
-                <span className="tsb-price">{lowCents}¢</span>
+                <span className="tsb-label"><Caret dir="down" />Relative Low</span>
+                <span className="tsb-price num">{lowCents}&cent;</span>
               </button>
             </div>
 
             {selected && !confirmed && (
               <div className="trade-entry">
                 <div className="trade-sub">
-                  RSI {selected === 'high' ? `≥ ${THRESHOLD_HIGH}` : `≤ ${THRESHOLD_LOW}`} on a closed 5m candle
+                  Resolves when RSI reaches {selected === 'high' ? THRESHOLD_HIGH : THRESHOLD_LOW} on a closed {TIMEFRAME}m candle
                 </div>
+
                 <div className="trade-input-row">
-                  <label className="trade-input-label">Amount (USDC)</label>
+                  <label className="trade-input-label" htmlFor="trade-amount">Amount in USDC</label>
                   <div className="trade-input-wrap">
                     <span className="trade-currency">$</span>
-                    <input className="trade-input" type="number" min="1" placeholder="0.00"
+                    <input id="trade-amount" className="trade-input" type="number" min="1" placeholder="0.00"
                       value={amount} onChange={e => setAmount(e.target.value)} autoFocus />
                   </div>
                 </div>
+
                 {payout && (
                   <div className="trade-payout">
-                    <div className="trade-payout-row"><span>Entry</span><span>${amt.toFixed(2)}</span></div>
-                    <div className="trade-payout-row"><span>Potential payout</span><span className="g">${payout}</span></div>
-                    <div className="trade-payout-row"><span>Potential profit</span><span className="g">+${profit}</span></div>
-                    <div className="trade-payout-row"><span>Odds</span><span>{cents}¢ · {(100 / cents).toFixed(2)}x</span></div>
+                    <div className="trade-payout-row"><span>Entry</span><span className="num">${amt.toFixed(2)}</span></div>
+                    <div className="trade-payout-row"><span>Payout if correct</span><span className="g num">${payout}</span></div>
+                    <div className="trade-payout-row"><span>Profit if correct</span><span className="g num">+${profit}</span></div>
+                    <div className="trade-payout-row"><span>Odds</span><span className="num">{cents}&cent; · {(100 / cents).toFixed(2)}x</span></div>
                   </div>
                 )}
-                <div className="trade-demo-notice">⚠ Demo mode — no real funds are used</div>
-                <button className={`trade-confirm ${selected === 'high' ? 'green' : 'red'}`}
+
+                <div className="demo-note">Demo mode. No real funds are used.</div>
+
+                <button className={`trade-confirm ${selected === 'high' ? 'high' : 'low'}`}
                   disabled={!payout} onClick={handleConfirm}>
-                  Place Demo Order · ${amt > 0 ? amt.toFixed(2) : '0.00'}
+                  Place demo order · ${amt > 0 ? amt.toFixed(2) : '0.00'}
                 </button>
               </div>
             )}
 
             {confirmed && (
               <div className="trade-success">
-                <span className="trade-success-icon">✓</span>
+                <span className="trade-success-icon"><CheckIcon /></span>
                 <div>
-                  <div className="trade-success-title">Demo Order Filled</div>
-                  <div className="trade-success-sub">Position open — view below chart. Simulated only.</div>
+                  <div className="trade-success-title">Demo order filled</div>
+                  <div className="trade-success-sub">Position is open below the chart. Simulated only.</div>
                 </div>
               </div>
             )}
           </div>
 
           <div className="status-bar">
-            <div className="dot" style={{ background: connected ? 'var(--green)' : 'var(--red)' }} />
+            <div className="dot" style={{ background: connected ? 'var(--high)' : 'var(--low)' }} />
             <span>
-              {connected ? `Live · ${assetInfo.label}` : 'Reconnecting...'} · Next close{' '}
+              {connected ? `Live · ${assetInfo.pair}` : 'Reconnecting'} · Next close{' '}
               <span className="countdown">{fmtCountdown(countdown)}</span>
             </span>
           </div>
